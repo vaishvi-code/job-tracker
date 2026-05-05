@@ -55,5 +55,9 @@ Respond ONLY with a JSON object in this exact format (no markdown, no extra text
                 text = text[4:]
         result = json.loads(text.strip())
         return schemas.EmailResponse(subject=result["subject"], body=result["body"])
-    except (httpx.HTTPError, KeyError, json.JSONDecodeError) as e:
+    except httpx.HTTPStatusError as e:
+        print(f"Gemini HTTP error: {e.response.status_code} - {e.response.text}")
+        raise HTTPException(status_code=500, detail=f"Gemini error: {e.response.text}")
+    except Exception as e:
+        print(f"Email generation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
